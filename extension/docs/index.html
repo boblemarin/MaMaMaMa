@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="shortcut icon" href="icon.png">  
+    <title>MaMaMaMa</title>
+    <link rel="stylesheet" type="text/css" href="drawing.css">
+  </head>
+  <body>
+
+    <div id="drawing">
+      <div id="drawing-background"></div>
+      <div id="source-image"></div>
+      <canvas id="render"></canvas>
+      <canvas id="tool-preview"></canvas>
+    </div>
+    <div id="toolbar">
+      <div id="colors">
+        <!-- <button value="#3399FFFF" class="color-picker" data-jscolor="{onInput: 'updateColor(this)'}"> -->
+      </div>
+      <div id="layers">
+        
+      </div>
+      <div id="layer-buttons">
+        <div class="menu-item menu-undo"></div>
+        <div class="menu-item menu-preview"></div>
+        <div class="menu-item menu-save"></div>
+      </div>
+    </div>
+
+    <script src="jscolor.js"></script>
+    <script src="drawing.js"></script>
+    
+  </body>
+</html>

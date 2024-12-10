@@ -1,0 +1,267 @@
+html { box-sizing: border-box; }
+*, *:before, *:after { box-sizing: inherit; }
+html, body { height: 100%; }
+
+body {
+  overflow: hidden;
+  background-color: #888;
+  color: black;
+  font-family: sans-serif;
+  margin: 0;
+}
+
+div {
+  margin: 0;
+  padding: 0;
+}
+
+#drawing {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 220px;
+  cursor: crosshair;
+  overflow: hidden;
+  transition: 0.2s transform ease-out;
+}
+
+#drawing-background.closing-point {
+  cursor: pointer;
+}
+
+#drawing-background {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  cursor: crosshair;
+}
+
+#source-image {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: 40px;
+  bottom: 40px;
+  background-position: center center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+#drawing canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#tool-preview {
+  mix-blend-mode: difference;
+}
+
+.start-point {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50% 50%;
+  border: 2px solid red;
+  animation-name: starting-point;
+  animation-duration: 0.7s;
+  animation-fill-mode: forward;
+  animation-timing-function: ease-out;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+@keyframes starting-point {
+  from {
+    transform: scale(2);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#toolbar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  border-left: 1px solid black;
+}
+
+.color-picker {
+  width: 100%;
+  height: 4em;
+}
+
+
+.layer-buttons {
+  text-align: center;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.menu-item {
+  display: inline-block;
+  margin: 4px;
+  padding: 0;
+  width: 42px;
+  height: 42px;
+  /*margin-bottom: 4px;*/
+  background-color: white;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  border-radius: 50% 50%;
+  border: 4px solid #777;
+  cursor: pointer;
+}
+.menu-item:hover {
+  border: 4px solid black;
+}
+.menu-separator {
+  width: 42px;
+  height: 84px;
+}
+.menu-black {
+  background-color: black;
+}
+.menu-white {
+  background-color: white;
+}
+.menu-new {
+  background-image: url(menu-new.png);
+}
+.menu-save {
+  background-image: url(menu-save.png);
+}
+.menu-preview {
+  background-image: url(menu-preview.png);
+}
+.menu-undo {
+  background-image: url(menu-undo.png);
+}
+
+
+.layer-item {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid grey;
+  display: block;
+  height: 32px;
+  width: 100%;
+}
+
+.layer-visible {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin: 4px;
+}
+
+.layer-color {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+}
+
+
+
+/*
+html { box-sizing: border-box; }
+*, *:before, *:after { box-sizing: inherit; }
+
+html, body { height: 100%; }
+
+body {
+  background-color: #999;
+  margin: 0;
+  color: black;
+  font-family: Helvetica;
+  overflow: hidden;
+  cursor: crosshair;
+}
+.fs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+#sourceDiv {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 10px;
+  bottom: 10px;
+  pointer-events: none;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.menu {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 42px;
+}
+.menu-item {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 4px;
+  background-color: white;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  border-radius: 50% 50%;
+  border: 4px solid #777;
+  cursor: pointer;
+}
+.menu-item:hover {
+  border: 4px solid black;
+}
+.menu-separator {
+  width: 42px;
+  height: 84px;
+}
+.menu-black {
+  background-color: black;
+}
+.menu-white {
+  background-color: white;
+}
+.menu-new {
+  background-image: url(menu-new.png);
+}
+.menu-save {
+  background-image: url(menu-save.png);
+}
+.menu-preview {
+  background-image: url(menu-preview.png);
+}
+.menu-undo {
+  background-image: url(menu-undo.png);
+}
+.invisible {
+  display: none;
+}
+*/
