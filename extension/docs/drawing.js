@@ -53,6 +53,7 @@ let drawingContainer = document.getElementById('drawing'),
     rcv = document.getElementById('render'),
     tmpcv = document.getElementById('tool-preview'),
     startingPoint = document.createElement('div'),
+
     drawingWidth = drawingContainer.clientWidth,
     drawingHeight = drawingContainer.clientHeight,
     sourceImage = null,
@@ -63,10 +64,11 @@ let drawingContainer = document.getElementById('drawing'),
     zoomFactor = 3,
     lineColor = 'white',
     selectedLayer = null,
-    currentLayer = createLayer();
+    tempLayer = null;
 
-
+//==========================================================
 //===== INIT PROCEDURE =====================================
+//==========================================================
 
 // set picker defaults
 jscolor.presets.default = {
@@ -83,24 +85,28 @@ let picker = new JSColor(input, opts); // 'JSColor' is an alias to 'jscolor'
 picker.onInput = updateColor;
 document.querySelector('#colors').appendChild(input);
 picker.fromRGBA(240,20,0,255);
-updateColor();
-
+//updateColor();
 
 startingPoint.classList.add('start-point');
 if (window.location.search.startsWith('?q=')) {
   sourceImage = window.location.search.substring(3);
   document.querySelector('#source-image').style.backgroundImage = 'url('+sourceImage+')';
-  resize();
-
-  drawingBG.addEventListener('mousedown', onDrawingMouseDown);
-  drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
-  window.addEventListener('keydown', onKeyDown );
-  document.addEventListener('contextmenu', onRightMouseDown, false);
 }
 
+resize();
+
+drawingBG.addEventListener('mousedown', onDrawingMouseDown);
+drawingBG.addEventListener('mousemove', onDrawingMouseMove);
+drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
+
+window.addEventListener('keydown', onKeyDown );
+document.addEventListener('contextmenu', onRightMouseDown, false);
 
 
+
+//=====================================================
 //===== EVENT LISTENERS ===============================
+//=====================================================
 
 function onDrawingMouseDown(event) {
   console.log(event);
@@ -112,28 +118,25 @@ function onDrawingMouseDown(event) {
   if (!isDrawingShape) {
     // add first point to shape
     isDrawingShape = true;
-    currentLayer = createLayer();
-    currentLayer.points.push(point(px, py));
+    startLayer();
+    tempLayer.points.push(point(px, py));
 
     startingPoint.style.left = px - 10 + 'px';
     startingPoint.style.top = py - 10 + 'px';
     drawingContainer.appendChild(startingPoint);
 
-    drawingBG.addEventListener('mousemove', onDrawingMouseMove);
   } else {
     if (distanceFromFirstPoint(px, py) < 10) {
       // close shape, store layer, clean rendering
       isDrawingShape = false;
-      drawingBG.removeEventListener('mousemove', onDrawingMouseMove);
-      layers.push(currentLayer);
-      currentLayer = null;
+      completeLayer();
       startingPoint.remove();
       drawingBG.classList.remove('closing-point');
       renderTempShape();
       renderLayers();
     } else {
       // add point to shape in current layer
-      currentLayer.points.push(point(px, py));  
+      tempLayer.points.push(point(px, py));  
     }  
   }
 }
@@ -155,6 +158,8 @@ function onDrawingMouseWheel(event) {
 }
 
 function onDrawingMouseMove(event) {
+  if (!isDrawingShape) return;
+
   let px = event.offsetX, py = event.offsetY;
   renderTempShape(px, py);
   // switch cursor when finalizing shape
@@ -172,12 +177,12 @@ function onKeyDown(event) {
   switch(event.keyCode) {
   case 8: // backspace
     if (!isDrawingShape) return;
-    if (currentLayer.points.length>1) currentLayer.points.pop();
-    else cancelCurrentLayer();
+    if (tempLayer.points.length>1) tempLayer.points.pop();
+    else cancelLayer();
     renderTempShape();
     break;
   case 27: // ESC
-    cancelCurrentLayer();
+    cancelLayer();
     renderTempShape();
     break;
   /*default:
@@ -192,13 +197,6 @@ function onRightMouseDown(event) {
   return false;
 }
 
-function updateColor() {
-  let color = picker.toHEXString();
-  currentLayer.color = color;
-  document.querySelector(".color-picker").style.background = color;
-  renderLayers();
-}
-
 
 //===== RENDERING ==================================================
 
@@ -209,8 +207,8 @@ function clearTempShape() {
 
 function renderTempShape(mouseX, mouseY) {
   clearTempShape();
-  if (!currentLayer) return;
-  let n = currentLayer.points.length;
+  if (!tempLayer) return;
+  let n = tempLayer.points.length;
   if (n<1) return;
 
   let ctx = tmpcv.getContext('2d');  
@@ -219,7 +217,7 @@ function renderTempShape(mouseX, mouseY) {
 
   ctx.moveTo(mouseX,mouseY);
   while(--n >= 0) {
-    ctx.lineTo(currentLayer.points[n].x,currentLayer.points[n].y);
+    ctx.lineTo(tempLayer.points[n].x,tempLayer.points[n].y);
   }
   ctx.stroke();
 }
@@ -249,26 +247,73 @@ function renderLayers() {
 
 }
 
+/*
+fn selectLayer(index)
+  - display selected in layers list
+  - updateColorPicker with selected layer's color
+  - selectedLayer = layers[index]
 
+fn startLayer()
+  tempLayer = createLayer()
+  tempLayer.color = if (selectedLayer) selectedLayer.color 
+  selectedLayer = tempLayer
 
+fn completeLayer()
+  if (tempLayer.points < 3) return
+  layers.push(tempLayer)
+  selectedLayer = tempLayer
+  tempLayer = null
+
+fn cancelLayer()
+  tempLayer = null
+  */
+
+//=======================================================================
 //===== UTILITIES =======================================================
+//=======================================================================
 
 function point(x, y) { return {x: x, y: y}; }
 
-function createLayer() { return { color: 0xFF0000, visible: true, selected: false, points: [] }; }
+function createLayer() { return { color: picker.toHEXString(), visible: true, selected: false, points: [] }; }
 
-function cancelCurrentLayer() {
+function startLayer() {
+  tempLayer = createLayer();
+  selectedLayer = tempLayer;
+}
+
+function completeLayer() {
+  layers.push(tempLayer);
+  selectedLayer = tempLayer;
+  tempLayer = null;
+  
+}
+
+function cancelLayer() {
   if (!isDrawingShape) return;
-  currentLayer.points.length = 0;
+  tempLayer.points.length = 0;
   startingPoint.remove();
   isDrawingShape = false;
   drawingContainer.classList.remove('closing-point');
   drawingContainer.removeEventListener('mousemove', onDrawingMouseMove);
 }
 
+function selectLayer(layer) {
+  if (layer == selectedLayer) return;
+  selectedLayer = layer;
+  picker.fromHEXString(selectedLayer.color);
+  // todo: update render layers list (to show selected one)
+}
+
+function updateColor() {
+  let color = picker.toHEXString();
+  tempLayer.color = color;
+  document.querySelector(".color-picker").style.background = color;
+  renderLayers();
+}
+
 function distanceFromFirstPoint(x,y) {
-  if (currentLayer.points.length < 3) return 999999;
-  let p = currentLayer.points[0];
+  if (tempLayer.points.length < 3) return 999999;
+  let p = tempLayer.points[0];
   return Math.sqrt(Math.pow(p.x-x,2)+Math.pow(p.y-y,2));
 }
 
@@ -290,7 +335,7 @@ function updateLayers() {
   let c = '';
   layers.forEach((layer, index) =>  {
     c += '<div class="layer-item';
-    if (layer.selected) c += ' layer-selected';
+    if (layer == selectedLayer) c += ' layer-selected';
     c += '" data-index="'+index+'">';
 
     c += '<input type="checkbox" class="layer-visible"';
