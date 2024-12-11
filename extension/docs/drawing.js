@@ -19,6 +19,7 @@ OK - generate thumbnails for layers
 - write documentation
 - add button for documentation
 - auto-save current project in browser data
+- debounce rendering of temp shape
 
 */
 
@@ -348,6 +349,7 @@ function completeLayer() {
   layers.push(tempLayer);
   selectedLayer = tempLayer;
   tempLayer = null;
+  saved = false;
 }
 
 function cancelLayer() {
@@ -375,6 +377,7 @@ function deleteLayer(force) {
     selectedLayer = null;
     renderLayers();
   }
+  saved = false;
 }
 
 function moveLayerDown() {
@@ -390,6 +393,7 @@ function moveLayerDown() {
   layers[i-1] = layers[i];
   layers[i] = t;
   renderLayers();
+  saved = false;
 }
 
 function moveLayerUp() {
@@ -405,6 +409,7 @@ function moveLayerUp() {
   layers[i+1] = layers[i];
   layers[i] = t;
   renderLayers();
+  saved = false;
 }
 
 function updateColor() {
@@ -414,6 +419,7 @@ function updateColor() {
   if (tempLayer) tempLayer.color = color;
   if (selectedLayer) selectedLayer.color = color;
   renderLayers();
+  saved = false;
 }
 
 function distanceFromFirstPoint(x,y) {
