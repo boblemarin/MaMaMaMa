@@ -14,12 +14,30 @@ OK - add source image toggle
 OK - add svg export
 OK - warn before closing tab
 OK - generate thumbnails for layers
+
 - optimize thumbnail system
+  - thumbnails = {}
+  - generate uid for each layer, store thumbnail on uid key, add uid to layer data
+  - rebuild thumbnails on layer completion, color change (get ending and not continuous)
+  - delete thumbnail on layer deletion (not that important, but clean)
+  - onUpdateLayers, use thumbnails[layer.uid] :)
+
 - add svg import and project continuation
+  ok - load svg file, get text content
+  - get reference image
+  - add param in svg declaration to allow detection of compatible svg files
+  - error prompt on incompatible svg file
+  - parse svg layers, get points and colors and put back 
+  
+- auto-save current project in localstorage
+  - use svg format once svg import is done
+
 - write documentation
 - add button for documentation
-- auto-save current project in browser data
+
 - debounce rendering of temp shape
+
+- further optimisations
 
 */
 
@@ -42,6 +60,8 @@ let drawingContainer = document.getElementById('drawing'),
     lineColor = 'white',
     saved = false,
     selectedLayer = null,
+    thumbnailCounter = 0,
+    thumbnails = [],
     tempLayer = null;
 
 //==========================================================
@@ -61,6 +81,7 @@ input.classList.add('color-picker');
 var opts = {};
 let picker = new JSColor(input, opts); // 'JSColor' is an alias to 'jscolor'
 picker.onInput = updateColor;
+//picker.onChange = applyColorUpdate;
 document.querySelector('#colors').appendChild(input);
 picker.fromRGBA(240,20,0,255);
 //updateColor();
@@ -288,7 +309,7 @@ function updateLayers() {
     c += ' />';
 
     //c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
-    c += '<div class="layer-color" style="background-image:url('+thumbnailForLayer(layer)+')"></div>';
+    c += '<div class="layer-color" style="background-image:url('+thumbnails[layer.thumbnailId]+')"></div>';
 
     c += '</div>';
 
@@ -337,7 +358,7 @@ function thumbnailForLayer(layer) {
 
 function point(x, y) { return {x: x, y: y}; }
 
-function createLayer() { return { color: picker.toHEXString(), visible: true, points: [] }; }
+function createLayer() { return { color: picker.toHEXString(), visible: true, thumbnailId: thumbnailCounter, points: [] }; }
 
 function startLayer() {
   tempLayer = createLayer();
@@ -347,8 +368,10 @@ function startLayer() {
 
 function completeLayer() {
   layers.push(tempLayer);
+  thumbnails[tempLayer.thumbnailId] = thumbnailForLayer(tempLayer);
   selectedLayer = tempLayer;
   tempLayer = null;
+  ++thumbnailCounter;
   saved = false;
 }
 
@@ -417,11 +440,19 @@ function updateColor() {
   document.querySelector(".color-picker").style.background = color;
 
   if (tempLayer) tempLayer.color = color;
-  if (selectedLayer) selectedLayer.color = color;
+  if (selectedLayer) {
+    selectedLayer.color = color;
+    thumbnails[selectedLayer.thumbnailId] = thumbnailForLayer(selectedLayer);
+  }
   renderLayers();
   saved = false;
 }
 
+/*function applyColorUpdate() {
+  // todo: regenerate thumbnails
+  updateLayers();
+}
+*/
 function distanceFromFirstPoint(x,y) {
   if (tempLayer.points.length < 3) return 999999;
   let p = tempLayer.points[0];
