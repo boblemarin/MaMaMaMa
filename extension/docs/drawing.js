@@ -1,5 +1,57 @@
 /*
 
+Usage :
++++++++
+
+Once the extension installed, there will be a clickable icon.
+Don't forget you can pin the extension to your browser bar, having it at hand for emergencies.
+
+Surf the web and find an inspiring image.
+Click the extension icon, then hover the selected image.
+You should see a red dotted border appearing around it.
+If that's the case, press the left mouse button and a new tab will be created, showing the image inside of a drawing interface.
+
+
+Drawing interface :
++++++++++++++++++++
+
+Use left mouse button inside the drawing area to start a shape. Then move the cursor and click again to add points to the shape. A circle appears at the first point, and must be clicked to close the path. A path must have at least three points to be closed.
+
+While drawing a shape :
+  - use <backspace> to remove the last point
+  - use <escape> to cancel the shape
+
+When a path is closed, a layer is created for it and is selected. You can see which layer is selected in the layer list on the right, it is the one that is black. 
+
+The new layer is assigned the current color picker color value. You can use the color picker to change the selected layer color.
+
+Select a layer by clicking on it in the layer list. The color picker changes to the layer color. You can use this behavior to help creating new shapes with an already used color.
+
+While a layer is selected :
+  - use <up> and <down> to change the layer stacking position
+  - use <delete> to delete the layer (triggers a confirmation dialog)
+  - use <shift>+<delete> to delete the layer without the dialog
+
+You can also hide a layer by clicking the visibility checkbox, situated on the left side of the layer column. 
+<shift> + clicking the checkbox will toggle all shape layers.
+
+Zoom with mouse wheel. Zoom is only off or x2. Zooming is centered around the mouse cursor position at the time of its activation. Trial and error is sometimes required to get the most confortable zooming area.
+
+
+Menu (bottom-right) :
+
+The (photo) button toggles the visibility of the reference image.
+
+Use the (save) button to download a SVG version of the drawing.
+
+*NOT YET* Use <alt> + (save) button to load a previously saved SVG file and continue working on it.
+
+
+
+
+
+
+
 OK - add zooming function with mouse wheel
 OK - use flexbox for tools layout
 OK - show layers in reversed order in side panel
@@ -215,8 +267,12 @@ function onLayersContainerClick(event) {
     break;
   case 'layer-visible':
     let cb = event.target;
-    let i = event.target.parentElement.dataset.index;
-    layers[i].visible = cb.checked;
+    if (event.shiftKey) {
+      layers.forEach(layer => layer.visible = cb.checked);
+    } else {
+      let i = event.target.parentElement.dataset.index;
+      layers[i].visible = cb.checked;
+    }
     renderLayers();
     break;
   }

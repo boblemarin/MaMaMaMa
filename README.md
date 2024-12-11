@@ -2,7 +2,7 @@
 
 # MaMaMaMa
 
-A Chromium extension that allows to draw on existing image in the style of outsider artist Marie Bodson, and export the export the result as an SVG files. 
+A Chromium extension that allows to draw on existing image in the style of outsider artist Marie Bodson, and export the result as an SVG files. 
 
 ## Usage
 
