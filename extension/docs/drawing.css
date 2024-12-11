@@ -56,7 +56,7 @@ div {
 }
 
 .invisible {
-  visibility: hidden;
+  display: none;
 }
 
 #drawing canvas {
