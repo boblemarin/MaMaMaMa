@@ -55,6 +55,10 @@ div {
   pointer-events: none;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 #drawing canvas {
   position: absolute;
   top: 0;
@@ -126,13 +130,13 @@ div {
   flex-grow:1;
   border-top: 1px solid black;
   border-bottom: 1px solid black;
-  display: flex;
+  /*display: flex;
   flex-direction: column-reverse;
-  justify-content: flex-end; 
+  justify-content: flex-end; */
 }
 
 
-#layer-buttons {
+#menu-bar {
   text-align: center;
   width: 100%;
   margin: 0;
@@ -185,12 +189,13 @@ div {
 
 .layer-item {
   margin: 2px;
-  padding: 8px;
+  padding: 2px;
   /*border-bottom: 1px solid grey;*/
   display: block;
-  /*height: 34px;*/
+  height: 36px;
   width: 100%;
   background-color: #AAA;
+  cursor: pointer;
 }
 
 .layer-item.layer-selected {
@@ -200,8 +205,9 @@ div {
 .layer-visible {
   display: inline-block;
   width: 24px;
-  height: 24px;
-  vertical-align: top;
+  height: 100%;
+  margin: 0 10px;
+  cursor: cell;
 }
 
 .layer-color {

@@ -6,9 +6,11 @@ OK - show layers in reversed order in side panel
 OK - listen to up/down keys to move layer 
 OK - listen to delete key to delete layer (with confirm prompt)
 OK - listen to click on layer div to select it
-+- - improve styling of layers list
-- listen to click on visibility checkbox (change model, render)
-- add interactivity to layer management interface
+OK - improve styling of layers list
+OK - listen to click on visibility checkbox (change model, render)
+OK - add scrolling to layers list
+OK - add interactivity to layer management interface
+OK - add source image toggle
 - add svg export
 - add svg import and project continuation
 - generate and store thumbnails for layers
@@ -69,6 +71,7 @@ drawingBG.addEventListener('mousemove', onDrawingMouseMove);
 drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
 
 layersContainer.addEventListener('click',onLayersContainerClick);
+document.querySelector('#menu-bar').addEventListener('click',onMenuBarClick);
 
 window.addEventListener('keydown', onKeyDown );
 document.addEventListener('contextmenu', onRightMouseDown, false);
@@ -183,6 +186,22 @@ function onLayersContainerClick(event) {
   switch(event.target.className) {
   case 'layer-item':
     selectLayer(layers[event.target.dataset.index]);
+    break;
+  case 'layer-visible':
+    let cb = event.target;
+    let i = event.target.parentElement.dataset.index;
+    layers[i].visible = cb.checked;
+    renderLayers();
+    break;
+  }
+}
+
+function onMenuBarClick(event) {
+  //console.log(event.target.id);
+  
+  switch(event.target.id) {
+  case 'btn_preview':
+    document.querySelector('#source-image').classList.toggle('invisible');
     break;
   }
 }
@@ -344,7 +363,9 @@ function updateLayers() {
 
   //layersContainer
   let c = '';
-  layers.forEach((layer, index) =>  {
+  let index = layers.length;
+  while(--index >= 0) {
+    let layer = layers[index];
     c += '<div class="layer-item';
     if (layer == selectedLayer) c += ' layer-selected';
     c += '" data-index="'+index+'">';
@@ -357,19 +378,22 @@ function updateLayers() {
 
     c += '</div>';
 
-    /*
-    let n = layer.points.length;
-    if (layer.visible && n) {
-      ctx.fillStyle = layer.color
-      ctx.beginPath();
-      ctx.moveTo(layer.points[0].x,layer.points[0].y);
-      while(--n>0) {
-        ctx.lineTo(layer.points[n].x,layer.points[n].y);
-      }
-      ctx.closePath();
-      ctx.fill();
-    }*/
+  } 
+  /*
+  layers.forEach((layer, index) =>  {
+    c += '<div class="layer-item';
+    if (layer == selectedLayer) c += ' layer-selected';
+    c += '" data-index="'+index+'">';
+
+    c += '<input type="checkbox" class="layer-visible"';
+    if (layer.visible) c += ' checked';
+    c += ' />';
+
+    c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
+
+    c += '</div>';
   });
+*/
 
   layersContainer.innerHTML = c;
 }
