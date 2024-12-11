@@ -163,19 +163,7 @@ div {
   border: 4px solid black;
 }
 
-/*.menu-separator {
-  width: 42px;
-  height: 84px;
-}
-.menu-black {
-  background-color: black;
-}
-.menu-white {
-  background-color: white;
-}
-.menu-new {
-  background-image: url(menu-new.png);
-}*/
+
 .menu-save {
   background-image: url(menu-save.png);
 }
@@ -193,7 +181,7 @@ div {
   /*border-bottom: 1px solid grey;*/
   display: block;
   height: 36px;
-  width: 100%;
+  width: calc(100% - 5px);
   background-color: #AAA;
   cursor: pointer;
 }

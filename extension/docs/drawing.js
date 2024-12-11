@@ -12,12 +12,14 @@ OK - add scrolling to layers list
 OK - add interactivity to layer management interface
 OK - add source image toggle
 OK - add svg export
+OK - warn before closing tab
+OK - generate thumbnails for layers
+- optimize thumbnail system
 - add svg import and project continuation
-- generate and store thumbnails for layers
 - write documentation
 - add button for documentation
 - auto-save current project in browser data
-- warn before closing tab
+
 */
 
 
@@ -244,7 +246,7 @@ function renderTempShape(mouseX, mouseY) {
 
 function renderLayers() {
   updateLayers();
-  
+
   rcv.width = drawingWidth;
   rcv.height = drawingHeight;
   let n = layers.length;
@@ -264,8 +266,6 @@ function renderLayers() {
       ctx.fill();
     }
   });
-
-
 }
 
 
@@ -286,13 +286,47 @@ function updateLayers() {
     if (layer.visible) c += ' checked';
     c += ' />';
 
-    c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
+    //c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
+    c += '<div class="layer-color" style="background-image:url('+thumbnailForLayer(layer)+')"></div>';
 
     c += '</div>';
 
   } 
 
   layersContainer.innerHTML = c;
+}
+
+function thumbnailForLayer(layer) {
+  let width = 32, height = 32, canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  let ctx = canvas.getContext('2d');
+
+  let minX = 9999, maxX = 0, minY = 9999, maxY = 0, ratio = 1, n = layer.points.length;
+
+  layer.points.forEach(function(point) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  });
+  ratio = Math.max((maxX - minX) / width, (maxY - minY) / height);
+
+  let offsetX = (width - (maxX - minX) / ratio) / 2;
+  let offsetY = (height - (maxY - minY) / ratio) / 2;
+
+  if (n) {
+    ctx.fillStyle = layer.color
+    ctx.beginPath();
+    ctx.moveTo(offsetX + (layer.points[0].x - minX) / ratio, offsetY + (layer.points[0].y - minY) / ratio);
+    while(--n>0) {
+      ctx.lineTo(offsetX + (layer.points[n].x - minX) / ratio, offsetY + (layer.points[n].y - minY) / ratio);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  return canvas.toDataURL('image/png');
 }
 
 
@@ -442,7 +476,6 @@ function menuSave() {
     maxX = drawingWidth;
     maxY = drawingHeight
   }
-  
 
   // generate SVG code
   let svg = '<svg x="0px" y="0px" width="'+(maxX - minX)+'px" height="'+(maxY - minY)+'px" viewBox="0 0 '+(maxX - minX)+' '+(maxY - minY)+'" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" ';
@@ -462,11 +495,8 @@ function menuSave() {
   });
   svg += '</svg>';
 
-
   var d = new Date();
-
   var datestring = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
-  
   download(datestring + ".svg", svg);
   saved = true;
 }
@@ -476,11 +506,8 @@ function download(filename, text) {
   var element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
   element.setAttribute('download', filename);
-
   element.style.display = 'none';
   document.body.appendChild(element);
-
   element.click();
-
   document.body.removeChild(element);
 }
