@@ -1,48 +1,17 @@
 /*
 
-- tempLayer : created on clic in canvas, if no drawing has begun yet
-- selectedLayer : linked to the color selector, equals tempLayer during drawing sequence, changed when clicking in the layers list
-
-
-let tempLayer
-
-
-fn updateColorPicker(rgb)
-
-fn selectLayer(index)
-  - display selected in layers list
-  - updateColorPicker with selected layer's color
-  - selectedLayer = layers[index]
-
-fn startLayer()
-  tempLayer = createLayer()
-  tempLayer.color = if (selectedLayer) selectedLayer.color 
-  selectedLayer = tempLayer
-
-fn completeLayer()
-  if (tempLayer.points < 3) return
-  layers.push(tempLayer)
-  selectedLayer = tempLayer
-  tempLayer = null
-
-fn cancelLayer()
-  tempLayer = null
-
-
-fn renderTemp
-fn renderAll
-
-
-
-
-fn onDrawingMouseDown
-
-TODO:
-
 OK - add zooming function with mouse wheel
-- add layer management interface
+OK - use flexbox for tools layout
+OK - show layers in reversed order in side panel
++- - improve styling of layers list
+- listen to up/down keys to move layer 
+- listen to delete key to delete layer (with confirm prompt)
+- listen to click on layer div to select it
+- listen to click on visibility checkbox (change model, render)
+- add interactivity to layer management interface
 - add svg export
 - add svg import and project continuation
+- generate and store thumbnails for layers
 
 */
 
@@ -109,7 +78,7 @@ document.addEventListener('contextmenu', onRightMouseDown, false);
 //=====================================================
 
 function onDrawingMouseDown(event) {
-  console.log(event);
+  //console.log(event);
   event.preventDefault();
   event.stopImmediatePropagation();
 
@@ -185,9 +154,18 @@ function onKeyDown(event) {
     cancelLayer();
     renderTempShape();
     break;
-  /*default:
+  case 38: // UP
+    moveLayerUp();
+    break;
+  case 40: // DOWN
+    moveLayerDown();
+    break;
+  case 46: // DELETE
+    break;
+
+  default:
     console.log('key: ' + event.keyCode);
-    break;*/
+    break;
   }
 }
 
@@ -247,27 +225,6 @@ function renderLayers() {
 
 }
 
-/*
-fn selectLayer(index)
-  - display selected in layers list
-  - updateColorPicker with selected layer's color
-  - selectedLayer = layers[index]
-
-fn startLayer()
-  tempLayer = createLayer()
-  tempLayer.color = if (selectedLayer) selectedLayer.color 
-  selectedLayer = tempLayer
-
-fn completeLayer()
-  if (tempLayer.points < 3) return
-  layers.push(tempLayer)
-  selectedLayer = tempLayer
-  tempLayer = null
-
-fn cancelLayer()
-  tempLayer = null
-  */
-
 //=======================================================================
 //===== UTILITIES =======================================================
 //=======================================================================
@@ -279,35 +236,56 @@ function createLayer() { return { color: picker.toHEXString(), visible: true, se
 function startLayer() {
   tempLayer = createLayer();
   selectedLayer = tempLayer;
+  updateLayers();
 }
 
 function completeLayer() {
   layers.push(tempLayer);
   selectedLayer = tempLayer;
   tempLayer = null;
-  
 }
 
 function cancelLayer() {
   if (!isDrawingShape) return;
-  tempLayer.points.length = 0;
+  tempLayer = null;
   startingPoint.remove();
   isDrawingShape = false;
   drawingContainer.classList.remove('closing-point');
-  drawingContainer.removeEventListener('mousemove', onDrawingMouseMove);
 }
 
 function selectLayer(layer) {
-  if (layer == selectedLayer) return;
+  if (isDrawingShape || layer == selectedLayer) return;
   selectedLayer = layer;
   picker.fromHEXString(selectedLayer.color);
   // todo: update render layers list (to show selected one)
 }
 
+function moveLayerDown() {
+  if (!selectedLayer) return;
+  let i = layers.indexOf(selectedLayer);
+  if (i < 1) return;
+  let t = layers[i-1];
+  layers[i-1] = layers[i];
+  layers[i] = t;
+  renderLayers();
+}
+
+function moveLayerUp() {
+  if (!selectedLayer) return;
+  let i = layers.indexOf(selectedLayer);
+  if (i > layers.length - 2) return;
+  let t = layers[i+1];
+  layers[i+1] = layers[i];
+  layers[i] = t;
+  renderLayers();
+}
+
 function updateColor() {
   let color = picker.toHEXString();
-  tempLayer.color = color;
   document.querySelector(".color-picker").style.background = color;
+
+  if (tempLayer) tempLayer.color = color;
+  if (selectedLayer) selectedLayer.color = color;
   renderLayers();
 }
 
