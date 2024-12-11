@@ -14,13 +14,7 @@ OK - add source image toggle
 OK - add svg export
 OK - warn before closing tab
 OK - generate thumbnails for layers
-
-- optimize thumbnail system
-  - thumbnails = {}
-  - generate uid for each layer, store thumbnail on uid key, add uid to layer data
-  - rebuild thumbnails on layer completion, color change (get ending and not continuous)
-  - delete thumbnail on layer deletion (not that important, but clean)
-  - onUpdateLayers, use thumbnails[layer.uid] :)
+OK - optimize thumbnail system
 
 - add svg import and project continuation
   ok - load svg file, get text content
@@ -36,6 +30,10 @@ OK - generate thumbnails for layers
 - add button for documentation
 
 - debounce rendering of temp shape
+
+- replace undo button by a show all / hide all button, for easy preview
+
+- shrink starting-point when zoomed, to allow more precise action
 
 - further optimisations
 
@@ -128,7 +126,7 @@ function onDrawingMouseDown(event) {
     drawingContainer.appendChild(startingPoint);
 
   } else {
-    if (distanceFromFirstPoint(px, py) < 10) {
+    if (distanceFromFirstPoint(px, py) < 8) {
       // close shape, store layer, clean rendering
       isDrawingShape = false;
       completeLayer();
@@ -165,7 +163,7 @@ function onDrawingMouseMove(event) {
   let px = event.offsetX, py = event.offsetY;
   renderTempShape(px, py);
   // switch cursor when finalizing shape
-  if (distanceFromFirstPoint(px, py) < 10 ) {
+  if (distanceFromFirstPoint(px, py) < 8 ) {
     drawingBG.classList.add('closing-point');
   } else {
     drawingBG.classList.remove('closing-point');
