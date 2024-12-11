@@ -11,12 +11,13 @@ OK - listen to click on visibility checkbox (change model, render)
 OK - add scrolling to layers list
 OK - add interactivity to layer management interface
 OK - add source image toggle
-- add svg export
+OK - add svg export
 - add svg import and project continuation
 - generate and store thumbnails for layers
 - write documentation
 - add button for documentation
 - auto-save current project in browser data
+- warn before closing tab
 */
 
 
@@ -36,6 +37,7 @@ let drawingContainer = document.getElementById('drawing'),
     zoomedIn = false,
     zoomFactor = 3,
     lineColor = 'white',
+    saved = false,
     selectedLayer = null,
     tempLayer = null;
 
@@ -71,14 +73,14 @@ resize();
 drawingBG.addEventListener('mousedown', onDrawingMouseDown);
 drawingBG.addEventListener('mousemove', onDrawingMouseMove);
 drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
-
 layersContainer.addEventListener('click',onLayersContainerClick);
+document.querySelector('#file-input').addEventListener("change", onFileInputChange);
 document.querySelector('#menu-bar').addEventListener('click',onMenuBarClick);
-
 window.addEventListener('keydown', onKeyDown );
 document.addEventListener('contextmenu', onRightMouseDown, false);
-
-
+window.onbeforeunload = function(event) {
+  if (!saved && layers.length > 0) return "oui";
+}
 
 //=====================================================
 //===== EVENT LISTENERS ===============================
@@ -241,6 +243,8 @@ function renderTempShape(mouseX, mouseY) {
 }
 
 function renderLayers() {
+  updateLayers();
+  
   rcv.width = drawingWidth;
   rcv.height = drawingHeight;
   let n = layers.length;
@@ -261,7 +265,6 @@ function renderLayers() {
     }
   });
 
-  updateLayers();
 
 }
 
@@ -394,7 +397,26 @@ function resize() {
   tmpcv.height = drawingHeight;
 }
 
-function menuSave(event) {
+function menuLoad() {
+  document.querySelector('#file-input').click();
+}
+
+function onFileInputChange(event) {
+
+  if (event.target.files && event.target.files[0]) {
+    var myFile = event.target.files[0];
+    var reader = new FileReader();
+    
+    reader.addEventListener('load', function (e) {
+      let loadedSVG = e.target.result;
+      console.log(loadedSVG);
+    });
+    
+    reader.readAsBinaryString(myFile);
+  }   
+}
+
+function menuSave() {
   if (layers.length == 0) return;
 
   // trim image content
