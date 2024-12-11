@@ -106,12 +106,13 @@ div {
 
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-#toolbar div {
+/*#toolbar div {
   margin: 0;
   
-}
+}*/
 
 .color-picker {
   width: 100%;
@@ -135,7 +136,7 @@ div {
   text-align: center;
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
 }
 
 .menu-item {
@@ -152,11 +153,13 @@ div {
   border-radius: 50% 50%;
   border: 4px solid #777;
   cursor: pointer;
+  vertical-align: middle;
 }
 .menu-item:hover {
   border: 4px solid black;
 }
-.menu-separator {
+
+/*.menu-separator {
   width: 42px;
   height: 84px;
 }
@@ -168,7 +171,7 @@ div {
 }
 .menu-new {
   background-image: url(menu-new.png);
-}
+}*/
 .menu-save {
   background-image: url(menu-save.png);
 }
@@ -181,12 +184,13 @@ div {
 
 
 .layer-item {
-  margin: 0;
-  padding: 0;
-  border-bottom: 1px solid grey;
+  margin: 2px;
+  padding: 8px;
+  /*border-bottom: 1px solid grey;*/
   display: block;
-  height: 34px;
+  /*height: 34px;*/
   width: 100%;
+  background-color: #AAA;
 }
 
 .layer-item.layer-selected {
@@ -197,14 +201,15 @@ div {
   display: inline-block;
   width: 24px;
   height: 24px;
-  margin: 4px;
   vertical-align: top;
 }
 
 .layer-color {
   display: inline-block;
   width: 32px;
-  height: 32px;
+  height: 100%;
+  pointer-events: none;
+  margin: 0 10px;
 }
 
 

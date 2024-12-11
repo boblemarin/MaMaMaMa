@@ -3,10 +3,10 @@
 OK - add zooming function with mouse wheel
 OK - use flexbox for tools layout
 OK - show layers in reversed order in side panel
+OK - listen to up/down keys to move layer 
+OK - listen to delete key to delete layer (with confirm prompt)
+OK - listen to click on layer div to select it
 +- - improve styling of layers list
-- listen to up/down keys to move layer 
-- listen to delete key to delete layer (with confirm prompt)
-- listen to click on layer div to select it
 - listen to click on visibility checkbox (change model, render)
 - add interactivity to layer management interface
 - add svg export
@@ -67,6 +67,8 @@ resize();
 drawingBG.addEventListener('mousedown', onDrawingMouseDown);
 drawingBG.addEventListener('mousemove', onDrawingMouseMove);
 drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
+
+layersContainer.addEventListener('click',onLayersContainerClick);
 
 window.addEventListener('keydown', onKeyDown );
 document.addEventListener('contextmenu', onRightMouseDown, false);
@@ -161,11 +163,12 @@ function onKeyDown(event) {
     moveLayerDown();
     break;
   case 46: // DELETE
+    deleteLayer(event.shiftKey);
     break;
 
-  default:
+/*  default:
     console.log('key: ' + event.keyCode);
-    break;
+    break;*/
   }
 }
 
@@ -175,6 +178,14 @@ function onRightMouseDown(event) {
   return false;
 }
 
+function onLayersContainerClick(event) {
+  //console.log(event);
+  switch(event.target.className) {
+  case 'layer-item':
+    selectLayer(layers[event.target.dataset.index]);
+    break;
+  }
+}
 
 //===== RENDERING ==================================================
 
@@ -256,12 +267,29 @@ function cancelLayer() {
 function selectLayer(layer) {
   if (isDrawingShape || layer == selectedLayer) return;
   selectedLayer = layer;
-  picker.fromHEXString(selectedLayer.color);
-  // todo: update render layers list (to show selected one)
+  picker.fromString(selectedLayer.color);
+  updateLayers();
+}
+
+function deleteLayer(force) {
+  if (!selectedLayer || isDrawingShape) return;
+  let i = layers.indexOf(selectedLayer);
+  if (i < 0) return;
+  if (force || window.confirm("Effacer le calque ?")) {
+    layers.splice(i, 1);
+    if (tempLayer == selectedLayer) tempLayer = null;
+    selectedLayer = null;
+    renderLayers();
+  }
 }
 
 function moveLayerDown() {
-  if (!selectedLayer) return;
+  if (!selectedLayer) {
+/*    if (tempLayer || isDrawingShape) return;
+    selectedLayer = layers[layers.length-1];
+    updateLayers();*/
+    return;
+  } 
   let i = layers.indexOf(selectedLayer);
   if (i < 1) return;
   let t = layers[i-1];
@@ -271,7 +299,12 @@ function moveLayerDown() {
 }
 
 function moveLayerUp() {
-  if (!selectedLayer) return;
+  if (!selectedLayer) {
+/*    if (tempLayer || isDrawingShape) return;
+    selectedLayer = layers[0];
+    updateLayers();*/
+    return;
+  } 
   let i = layers.indexOf(selectedLayer);
   if (i > layers.length - 2) return;
   let t = layers[i+1];
