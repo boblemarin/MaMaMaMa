@@ -67,6 +67,8 @@ OK - add svg export
 OK - warn before closing tab
 OK - generate thumbnails for layers
 OK - optimize thumbnail system
+OK - replace undo button by a show all / hide all button, for easy preview
+
 
 - add svg import and project continuation
   ok - load svg file, get text content
@@ -75,15 +77,28 @@ OK - optimize thumbnail system
   - error prompt on incompatible svg file
   - parse svg layers, get points and colors and put back 
   
-- auto-save current project in localstorage
+
+
+valider imageGenerator="MaMaMaMa" et imageGeneratorVersion="1"
+puis chercher :
+imageReference=" > "
+boucle
+  <path fill=" > "
+  d="M > <space> puis split(',')
+  puis lire " L" > <space> puis split(',')
+  jusque " Z"
+
+
+- encode URL to avoid xml errors in SVG
+  
+- auto-save current project in localstorage (on tab exit without saving ?)
   - use svg format once svg import is done
 
-- write documentation
+OK - write documentation
 - add button for documentation
 
 - debounce rendering of temp shape
 
-- replace undo button by a show all / hide all button, for easy preview
 
 - shrink starting-point when zoomed, to allow more precise action
 
@@ -570,7 +585,7 @@ function menuSave() {
 
   // generate SVG code
   let svg = '<svg x="0px" y="0px" width="'+(maxX - minX)+'px" height="'+(maxY - minY)+'px" viewBox="0 0 '+(maxX - minX)+' '+(maxY - minY)+'" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" ';
-  svg += 'imageReference="' + sourceImage + '">'
+  svg += 'imageReference="' + encodeURIComponent(sourceImage) + '" imageGenerator="MaMaMaMa" imageGeneratorVersion="1">'
   layers.forEach(function(layer) {
     svg += '<path fill="'+layer.color+'" stroke="none" d="'
     let first = true;
