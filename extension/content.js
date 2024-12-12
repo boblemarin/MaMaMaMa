@@ -1,3 +1,5 @@
+console.log("MAMAMAMA: content script activated");
+
 var styleEl = document.createElement('style');
 document.head.appendChild(styleEl);
 var styleSheet = styleEl.sheet;
