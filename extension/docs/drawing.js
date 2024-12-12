@@ -68,28 +68,11 @@ OK - warn before closing tab
 OK - generate thumbnails for layers
 OK - optimize thumbnail system
 OK - replace undo button by a show all / hide all button, for easy preview
-
+OK - encode URL to avoid xml errors in SVG
 
 - add svg import and project continuation
-  ok - load svg file, get text content
-  - get reference image
-  - add param in svg declaration to allow detection of compatible svg files
-  - error prompt on incompatible svg file
-  - parse svg layers, get points and colors and put back 
-  
 
 
-valider imageGenerator="MaMaMaMa" et imageGeneratorVersion="1"
-puis chercher :
-imageReference=" > "
-boucle
-  <path fill=" > "
-  d="M > <space> puis split(',')
-  puis lire " L" > <space> puis split(',')
-  jusque " Z"
-
-
-- encode URL to avoid xml errors in SVG
   
 - auto-save current project in localstorage (on tab exit without saving ?)
   - use svg format once svg import is done
@@ -152,10 +135,11 @@ picker.fromRGBA(240,20,0,255);
 //updateColor();
 
 startingPoint.classList.add('start-point');
+
 if (window.location.search.startsWith('?q=')) {
-  sourceImage = window.location.search.substring(3);
-  document.querySelector('#source-image').style.backgroundImage = 'url('+sourceImage+')';
+  setSourceImage(window.location.search.substring(3));
 }
+
 
 resize();
 
@@ -417,7 +401,7 @@ function thumbnailForLayer(layer) {
     ctx.fill();
   }
 
-  return canvas.toDataURL('image/png');
+  thumbnails[layer.thumbnailId] = canvas.toDataURL('image/png');
 }
 
 
@@ -427,7 +411,12 @@ function thumbnailForLayer(layer) {
 
 function point(x, y) { return {x: x, y: y}; }
 
-function createLayer() { return { color: picker.toHEXString(), visible: true, thumbnailId: thumbnailCounter, points: [] }; }
+function setSourceImage(url) {
+  sourceImage = url;
+  document.querySelector('#source-image').style.backgroundImage = 'url('+sourceImage+')';
+}
+
+function createLayer() { return { color: picker.toHEXString(), visible: true, thumbnailId: thumbnailCounter++, points: [] }; }
 
 function startLayer() {
   tempLayer = createLayer();
@@ -437,10 +426,9 @@ function startLayer() {
 
 function completeLayer() {
   layers.push(tempLayer);
-  thumbnails[tempLayer.thumbnailId] = thumbnailForLayer(tempLayer);
+  thumbnailForLayer(tempLayer);
   selectedLayer = tempLayer;
   tempLayer = null;
-  ++thumbnailCounter;
   saved = false;
 }
 
@@ -511,7 +499,7 @@ function updateColor() {
   if (tempLayer) tempLayer.color = color;
   if (selectedLayer) {
     selectedLayer.color = color;
-    thumbnails[selectedLayer.thumbnailId] = thumbnailForLayer(selectedLayer);
+    thumbnailForLayer(selectedLayer);
   }
   renderLayers();
   saved = false;
@@ -549,11 +537,55 @@ function onFileInputChange(event) {
     
     reader.addEventListener('load', function (e) {
       let loadedSVG = e.target.result;
-      console.log(loadedSVG);
+      parseSVG(loadedSVG);
     });
     
     reader.readAsBinaryString(myFile);
   }   
+}
+
+let svgOffset = 0;
+
+function getSubstring(src, startString, endString) {
+  let fromIndex = src.indexOf(startString, svgOffset);
+  if (fromIndex < 0) return '';
+  fromIndex += startString.length;
+  let toIndex = src.indexOf(endString, fromIndex);
+  if (toIndex < 0) return '';
+  svgOffset = toIndex + endString.length;
+  return src.substring(fromIndex, toIndex);
+}
+
+function pointFromString(s) {
+  let p = s.split(',');
+  return point(Number(p[0]), Number(p[1]));
+}
+
+function parseSVG(data) {
+  // validate svg generator id
+  if (data.indexOf('imageGenerator="MaMaMaMa"') < 0) alert("This file has not been created by this application. Import process will likely fail.");
+  else if (data.indexOf('imageGeneratorVersion="1"') < 0) alert("This file has been created by a newer version of this appliation. Import process will likely fail. Consider updating MaMaMaMa to the latest version.");
+
+  // get reference image
+  setSourceImage(decodeURIComponent(getSubstring(data,'imageReference="','"')));
+
+  let color;
+  while(color = getSubstring(data, '<path fill="', '"')) {
+    let layer = createLayer();
+    layer.color = color;
+    let p = getSubstring(data, 'd="M', ' ');
+    layer.points.push(pointFromString(p));
+    
+    while(data.substring(svgOffset,svgOffset+1) == 'L') {
+      p = getSubstring(data, 'L', ' ');
+      layer.points.push(pointFromString(p));
+    }
+
+    layers.push(layer);
+    thumbnailForLayer(layer);
+    console.log(layer);
+  }
+  renderLayers();
 }
 
 function menuSave() {
@@ -606,7 +638,6 @@ function menuSave() {
   download(datestring + ".svg", svg);
   saved = true;
 }
-
 
 function download(filename, text) {
   var element = document.createElement('a');
