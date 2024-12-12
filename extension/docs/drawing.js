@@ -44,7 +44,7 @@ The (photo) button toggles the visibility of the reference image.
 
 Use the (save) button to download a SVG version of the drawing.
 
-*NOT YET* Use <alt> + (save) button to load a previously saved SVG file and continue working on it.
+Use <alt> + (save) button to load a previously saved SVG file and continue working on it.
 
 
 
