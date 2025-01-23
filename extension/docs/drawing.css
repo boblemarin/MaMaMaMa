@@ -192,10 +192,14 @@ div {
 
 .layer-visible {
   display: inline-block;
-  width: 24px;
+  width: 32px;
   height: 100%;
   margin: 0 10px;
   cursor: cell;
+}
+
+input[type="checkbox"] {
+   background-color: #fff;
 }
 
 .layer-color {

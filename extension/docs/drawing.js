@@ -69,22 +69,30 @@ OK - generate thumbnails for layers
 OK - optimize thumbnail system
 OK - replace undo button by a show all / hide all button, for easy preview
 OK - encode URL to avoid xml errors in SVG
+OK - add svg import and project continuation
 
-- add svg import and project continuation
+OK - rajouter du blanc dans la quick palette
+OK - dessiner un cadre autour du layer sélectionné
+OK - implémenter le drag-n-drop pour déplacer les layers
+OK - ajouter shift+up/down pour envoyer le layer tout en haut/bas
+OK - feed quick palette with drawing colors
+OK - make quick palettes bigger
+OK - keep black and white in quick palette
+OK - click on empty space in toolbar to unselect current layer
+OK - click on empty space in menu bar aslo unselects current layer
+OK - starting a new layer unselects current layer
 
 
-  
+
+
 - auto-save current project in localstorage (on tab exit without saving ?)
-  - use svg format once svg import is done
+- use svg format once svg import is done
 
 OK - write documentation
 - add button for documentation
 
 - debounce rendering of temp shape
-
-
 - shrink starting-point when zoomed, to allow more precise action
-
 - further optimisations
 
 */
@@ -119,9 +127,9 @@ let drawingContainer = document.getElementById('drawing'),
 // set picker defaults
 jscolor.presets.default = {
   position:'left', smartPosition:false, alphaChannel:false, 
-  palette:'#914E72, #0078BF, #00A95C, #3D5588, #FFE800, #FF48B0, #82D8D5, #000000',
+  palette:'#000000, #FFFFFF', //#914E72, #0078BF, #00A95C, #3D5588, #FFE800, #FF48B0, #82D8D5, #000000, #FFFFFF',
   height:180, mode:'HSV', closeButton:true, closeText:'OK', 
-  buttonHeight:22, sliderSize:18
+  buttonHeight:22, sliderSize:18, paletteCols:5, paletteHeight: 80
 };
 
 var input = document.createElement('button');
@@ -129,7 +137,7 @@ input.classList.add('color-picker');
 var opts = {};
 let picker = new JSColor(input, opts); // 'JSColor' is an alias to 'jscolor'
 picker.onInput = updateColor;
-//picker.onChange = applyColorUpdate;
+picker.onChange = rebuildPalette;
 document.querySelector('#colors').appendChild(input);
 picker.fromRGBA(240,20,0,255);
 //updateColor();
@@ -147,6 +155,9 @@ drawingBG.addEventListener('mousedown', onDrawingMouseDown);
 drawingBG.addEventListener('mousemove', onDrawingMouseMove);
 drawingBG.addEventListener('wheel', onDrawingMouseWheel, {passive: true});
 layersContainer.addEventListener('click',onLayersContainerClick);
+layersContainer.addEventListener('drop',onLayersContainerDrop);
+layersContainer.addEventListener('dragstart',onLayersContainerDragStart);
+layersContainer.addEventListener('dragover',onLayersContainerDragOver);
 document.querySelector('#file-input').addEventListener("change", onFileInputChange);
 document.querySelector('#menu-bar').addEventListener('click',onMenuBarClick);
 window.addEventListener('keydown', onKeyDown );
@@ -237,10 +248,10 @@ function onKeyDown(event) {
     renderTempShape();
     break;
   case 38: // UP
-    moveLayerUp();
+    moveLayerUp(event.shiftKey);
     break;
   case 40: // DOWN
-    moveLayerDown();
+    moveLayerDown(event.shiftKey);
     break;
   case 46: // DELETE
     deleteLayer(event.shiftKey);
@@ -259,7 +270,7 @@ function onRightMouseDown(event) {
 }
 
 function onLayersContainerClick(event) {
-  //console.log(event);
+  console.log(event.target.className);
   switch(event.target.className) {
   case 'layer-item':
     selectLayer(layers[event.target.dataset.index]);
@@ -274,7 +285,34 @@ function onLayersContainerClick(event) {
     }
     renderLayers();
     break;
+  case '':
+    if (selectedLayer) unselectLayer();
+    break;
   }
+}
+
+let draggedElement;
+
+function onLayersContainerDragStart(event) {
+  draggedElement = event.target.dataset.index;
+  //console.log("on layer container drag start");
+  //console.log(draggedElement);
+}
+function onLayersContainerDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+}
+function onLayersContainerDrop(event) {
+  event.preventDefault();
+  //console.log("DROP");
+  //let pos = event.layerY / event.target.clientHeight >> 0;
+  let dropElement = event.target.dataset.index;
+  if (draggedElement && dropElement && draggedElement != dropElement) {
+    let el = layers.splice(draggedElement,1)[0];
+    layers.splice((draggedElement<dropElement)?dropElement:dropElement,0,el);
+    renderLayers();
+  }
+  
 }
 
 function onMenuBarClick(event) {
@@ -287,6 +325,9 @@ function onMenuBarClick(event) {
   case 'btn_save':
     if (event.altKey) menuLoad();
     else menuSave();
+    break;
+  case 'menu-bar' :
+    unselectLayer();
     break;
   }
 
@@ -341,6 +382,22 @@ function renderLayers() {
       ctx.fill();
     }
   });
+
+  if (selectedLayer) {
+    let n = selectedLayer.points.length;
+    if (selectedLayer.visible && n) {
+      ctx.strokeStyle = 'white';
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(selectedLayer.points[0].x,selectedLayer.points[0].y);
+      while(--n>0) {
+        ctx.lineTo(selectedLayer.points[n].x,selectedLayer.points[n].y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
 }
 
 
@@ -353,7 +410,7 @@ function updateLayers() {
   let index = layers.length;
   while(--index >= 0) {
     let layer = layers[index];
-    c += '<div class="layer-item';
+    c += '<div draggable="true" class="layer-item';
     if (layer == selectedLayer) c += ' layer-selected';
     c += '" data-index="'+index+'">';
 
@@ -365,10 +422,20 @@ function updateLayers() {
     c += '<div class="layer-color" style="background-image:url('+thumbnails[layer.thumbnailId]+')"></div>';
 
     c += '</div>';
-
   } 
 
   layersContainer.innerHTML = c;
+}
+
+function rebuildPalette() {
+  let palet = ['#000000', '#FFFFFF'];
+  let index = layers.length;
+  while(--index >= 0) {
+    let layer = layers[index];
+    if (palet.indexOf(layer.color) < 0) palet.push(layer.color);
+  } 
+  picker.set__palette(palet.join(', '));
+  //console.log(picker.palette);
 }
 
 function thumbnailForLayer(layer) {
@@ -419,6 +486,7 @@ function setSourceImage(url) {
 function createLayer() { return { color: picker.toHEXString(), visible: true, thumbnailId: thumbnailCounter++, points: [] }; }
 
 function startLayer() {
+  unselectLayer();
   tempLayer = createLayer();
   selectedLayer = tempLayer;
   updateLayers();
@@ -444,7 +512,14 @@ function selectLayer(layer) {
   if (isDrawingShape || layer == selectedLayer) return;
   selectedLayer = layer;
   picker.fromString(selectedLayer.color);
-  updateLayers();
+  renderLayers();
+}
+
+function unselectLayer() {
+  if (selectedLayer) {
+    selectedLayer = null;
+    renderLayers();
+  }
 }
 
 function deleteLayer(force) {
@@ -460,7 +535,7 @@ function deleteLayer(force) {
   saved = false;
 }
 
-function moveLayerDown() {
+function moveLayerDown(full) {
   if (!selectedLayer) {
 /*    if (tempLayer || isDrawingShape) return;
     selectedLayer = layers[layers.length-1];
@@ -469,14 +544,18 @@ function moveLayerDown() {
   } 
   let i = layers.indexOf(selectedLayer);
   if (i < 1) return;
-  let t = layers[i-1];
-  layers[i-1] = layers[i];
-  layers[i] = t;
+  if (full) {
+    layers.unshift(layers.splice(i,1)[0]);
+  } else {
+    let t = layers[i-1];
+    layers[i-1] = layers[i];
+    layers[i] = t;
+  }
   renderLayers();
   saved = false;
 }
 
-function moveLayerUp() {
+function moveLayerUp(full) {
   if (!selectedLayer) {
 /*    if (tempLayer || isDrawingShape) return;
     selectedLayer = layers[0];
@@ -485,9 +564,13 @@ function moveLayerUp() {
   } 
   let i = layers.indexOf(selectedLayer);
   if (i > layers.length - 2) return;
-  let t = layers[i+1];
-  layers[i+1] = layers[i];
-  layers[i] = t;
+  if (full) {
+    layers.push(layers.splice(i,1)[0]);
+  } else {
+    let t = layers[i+1];
+    layers[i+1] = layers[i];
+    layers[i] = t;
+  }
   renderLayers();
   saved = false;
 }
@@ -583,7 +666,7 @@ function parseSVG(data) {
 
     layers.push(layer);
     thumbnailForLayer(layer);
-    console.log(layer);
+    //console.log(layer);
   }
   renderLayers();
 }
