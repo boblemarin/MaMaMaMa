@@ -2,7 +2,7 @@
 
 # MaMaMaMa
 
-A Chromium extension that allows to draw on existing image in the style of outsider artist Marie Bodson, and export the result as an SVG files. 
+A Chromium extension that allows to draw on top of any existing image in the style of outsider artist Marie Bodson, and export the result as an SVG file. 
 
 ## Usage
 
@@ -12,12 +12,11 @@ A new tab will be created with a simple drawing interface, and the chosen image 
 
 ## Features
 
-- [todo]
-- show / hide start image [todo]
-- undo / redo system (undo with backspace, redo with shift+backspace) [todo]
-- save as SVG [todo]
+- show / hide start image 
+- undo / redo system (undo with backspace, redo with shift+backspace)
+- save as SVG
 - load existing SVG [todo]
 
-<img src="https://github.com/boblemarin/mamamama/raw/master/docs/example.png" />
+<img src="https://github.com/boblemarin/mamamama/raw/master/promo_header.png" />
 
 Now the power is yours.
