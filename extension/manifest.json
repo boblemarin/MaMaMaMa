@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MaMaMaMa",
   "description": "A simple drawing interface built for outsider artist Marie Bodson",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "icons": { "128": "icon128.png" },
   "permissions": [ "activeTab", "scripting" ],
   "background": {
