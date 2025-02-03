@@ -162,7 +162,9 @@ document.querySelector('#file-input').addEventListener("change", onFileInputChan
 document.querySelector('#menu-bar').addEventListener('click',onMenuBarClick);
 window.addEventListener('keydown', onKeyDown );
 document.addEventListener('contextmenu', onRightMouseDown, false);
+
 window.onbeforeunload = function(event) {
+
   if (!saved && layers.length > 0) return "oui";
 }
 
@@ -370,8 +372,8 @@ function renderLayers() {
 
   let ctx = rcv.getContext('2d');
   layers.forEach((layer) =>  {
-    let n = layer.points.length;
-    if (layer.visible && n) {
+    if (layer && layer.visible && layer.points.length) {
+      let n = layer.points.length;
       ctx.fillStyle = layer.color
       ctx.beginPath();
       ctx.moveTo(layer.points[0].x,layer.points[0].y);
@@ -410,18 +412,20 @@ function updateLayers() {
   let index = layers.length;
   while(--index >= 0) {
     let layer = layers[index];
-    c += '<div draggable="true" class="layer-item';
-    if (layer == selectedLayer) c += ' layer-selected';
-    c += '" data-index="'+index+'">';
+    if (layer) {
+      c += '<div draggable="true" class="layer-item';
+      if (layer == selectedLayer) c += ' layer-selected';
+      c += '" data-index="'+index+'">';
 
-    c += '<input type="checkbox" class="layer-visible"';
-    if (layer.visible) c += ' checked';
-    c += ' />';
+      c += '<input type="checkbox" class="layer-visible"';
+      if (layer.visible) c += ' checked';
+      c += ' />';
 
-    //c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
-    c += '<div class="layer-color" style="background-image:url('+thumbnails[layer.thumbnailId]+')"></div>';
+      //c += '<div class="layer-color" style="background-color:'+layer.color+'"></div>';
+      c += '<div class="layer-color" style="background-image:url('+thumbnails[layer.thumbnailId]+')"></div>';
 
-    c += '</div>';
+      c += '</div>';
+    }
   } 
 
   layersContainer.innerHTML = c;
@@ -674,9 +678,18 @@ function parseSVG(data) {
 function menuSave() {
   if (layers.length == 0) return;
 
+  let svg = generateSVGCode();
+
+  var d = new Date();
+  var datestring = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
+  download(datestring + ".svg", svg);
+  saved = true;
+}
+
+function generateSVGCode(trim) {
   // trim image content
   let minX = 9999, maxX = 0, minY = 9999, maxY = 0;
-  if (false) {
+  if (trim) {
     // loop scan
     layers.forEach(function(layer) {
       layer.points.forEach(function(point) {
@@ -716,10 +729,7 @@ function menuSave() {
   });
   svg += '</svg>';
 
-  var d = new Date();
-  var datestring = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + " " + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);
-  download(datestring + ".svg", svg);
-  saved = true;
+  return svg;
 }
 
 function download(filename, text) {
