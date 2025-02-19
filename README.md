@@ -6,8 +6,7 @@ A Chromium extension that allows to draw on top of any existing image in the sty
 
 Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/mamamama/adinkhcmlcgpgkehmiednaihmejcbkci).
 
-
-!(/extension/doc/example.png?raw=true "non-contractual example")
+<img src="https://raw.githubusercontent.com/boblemarin/MaMaMaMa/refs/heads/main/promo_header.png">
 
 ## Usage
 
