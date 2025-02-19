@@ -10,8 +10,8 @@ Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/mam
 
 ## Usage
 
-Once the extension is installed, there will be a clickable icon.
-Don't forget you can pin the extension to your browser bar, having it at hand for emergencies.
+Once the extension is installed, there will be a new icon available.
+Don't forget you can pin the extension icon to your browser bar, having it at hand for emergencies.
 
 Surf the web and find an inspiring image.  
 Click the extension icon, then hover the selected image in the page.  
@@ -49,6 +49,12 @@ Menu (bottom-right) :
 - Use the (save) button to download a SVG version of the drawing.
 - Use `<alt>` + (save) button to load a previously saved SVG file and continue working on it.
 
+Please note that the URL of the source image is saved as XML attribute inside the SVG file.
+
 ## Credits
 
-Developed by boblemarin for La "S" Grand Atelier in Vielsalm, Belgium.
+Developed by boblemarin for [La "S" Grand Atelier](https://lasgrandatelier.be/) in Vielsalm, Belgium.
+
+
+<img src="https://raw.githubusercontent.com/boblemarin/MaMaMaMa/refs/heads/main/extension/docs/example.png">
+
